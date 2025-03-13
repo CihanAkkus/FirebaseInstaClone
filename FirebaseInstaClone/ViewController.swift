@@ -71,7 +71,32 @@ class ViewController: UIViewController {
     
     
     @objc func signInButtonPressed() {
-        performSegue(withIdentifier: "toFeedVC", sender: nil)
+        
+        if mailTextField.text != "" && passwordTextField.text != ""{
+            
+            Auth.auth().signIn(withEmail: mailTextField.text!, password: passwordTextField.text!) {(authdata, error) in
+                
+                if error != nil{
+                    self.makeAlert(title: "Error!", message: error?.localizedDescription ?? "Error")
+                }else{
+                    self.performSegue(withIdentifier: "toFeedVC", sender: nil)
+                    
+                }
+                
+                
+                
+                
+            }
+            
+            
+            
+        }else{
+            makeAlert(title: "Error!", message: "Username/Password cannot be empty")
+        }
+        
+        
+        
+        
     }
     
     @objc func signUpButtonPressed() {
