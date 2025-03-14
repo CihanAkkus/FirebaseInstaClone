@@ -1,6 +1,8 @@
 import UIKit
 import Firebase
+import FirebaseAuth
 import FirebaseStorage
+import FirebaseFirestore
 
 
 
@@ -9,6 +11,7 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate & 
     let image = UIImageView()
     let commentText = UITextField()
     let uploadButton = UIButton()
+    var chosenImage = UIImageView()
     
     
     
@@ -57,45 +60,76 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate & 
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         image.image = info[.originalImage] as? UIImage
+        chosenImage.image = info[.originalImage] as? UIImage
         self.dismiss(animated: true, completion: nil)
     }
     
     @objc func uploadButtonClicked(){
         
-        let storage = Storage.storage()
-        let storageReference = storage.reference()
-        
-        let mediaFolder = storageReference.child("media")
-        
-        if let data = image.image?.jpegData(compressionQuality: 0.5) {
+        if (chosenImage.image == image.image){
             
-            let uniqueID = UUID().uuidString
-            let imageReference = mediaFolder.child("\(uniqueID).jpg")
-            //let imageReference = mediaFolder.child("image.jpg")
+            let storage = Storage.storage()
+            let storageReference = storage.reference()
             
-            imageReference.putData(data, metadata: nil){ (metadata, error) in
+            let mediaFolder = storageReference.child("media")
+            
+            if let data = image.image?.jpegData(compressionQuality: 0.5) {
                 
-                if error != nil {
+                let uniqueID = UUID().uuidString
+                let imageReference = mediaFolder.child("\(uniqueID).jpg")
+                //let imageReference = mediaFolder.child("image.jpg")
+                
+                imageReference.putData(data, metadata: nil){ (metadata, error) in
                     
-                    self.alertMessage(title: "Error!", message: error?.localizedDescription ?? "Error!")
-                    
-                }else{
-                    
-                    imageReference.downloadURL{ (url, error) in
+                    if error != nil {
                         
-                        if error != nil {
-                            self.alertMessage(title: "Error!", message: error?.localizedDescription ?? "Error!")
-
-                        }else{
+                        self.alertMessage(title: "Error!", message: error?.localizedDescription ?? "Error!")
+                        
+                    }else{
+                        
+                        imageReference.downloadURL{ (url, error) in
                             
-                            let imageUrl = url?.absoluteString
-                            
+                            if error != nil {
+                                self.alertMessage(title: "Error!", message: error?.localizedDescription ?? "Error!")
+                                
+                            }else{
+                                
+                                let imageUrl = url?.absoluteString
+                                
+                                //DATABASE
+                                
+                                let firestoreDatabase = Firestore.firestore()
+                                
+                                var firestoreReference : DocumentReference? = nil
+                                
+                                let firestorePost = ["imageUrl" : imageUrl!, "postedBy" : Auth.auth().currentUser!.email!, "postComment": self.commentText.text!, "date" : FieldValue.serverTimestamp(), "likes" : 0] as [String : Any]
+                                
+                                firestoreReference = firestoreDatabase.collection("Posts").addDocument(data: firestorePost, completion: { (error) in
+                                    
+                                    if error != nil {
+                                        
+                                        self.alertMessage(title: "Error!", message: error?.localizedDescription ?? "Error!")
+                                        
+                                    }else{
+                                        
+                                        self.image.image = UIImage(named: "selectimage")
+                                        self.commentText.text =  ""
+                                        self.tabBarController?.selectedIndex = 0
+                                        
+                                    }
+                                    
+                                })
+                                
+                            }
                         }
+                        
                     }
                     
                 }
-            
             }
+        }else{
+            
+            alertMessage(title: "Error", message: "You need to select an image!")
         }
     }
     
