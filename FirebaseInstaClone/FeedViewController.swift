@@ -13,15 +13,15 @@ class FeedViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     
     
     
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        tableView.frame = view.bounds
         tableView.delegate = self
         tableView.dataSource = self
         
-        view.addSubview(tableView)
+    
         
         
         
@@ -33,21 +33,18 @@ class FeedViewController: UIViewController,UITableViewDelegate,UITableViewDataSo
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell()
-        /*
-        cell.userEmailLabel.text = "test@test.com"
-        cell.likeLabel.text = "10"
-        cell.commentLabel.text = "comment"
-        cell.userImageView.image = UIImage(named: "selectimage")
-         */
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! FeedCell
+        
+        //cell.useremailLabel.text = "test@test.com"
+        cell.likeLabel.text = "naber"
+        //cell.commentLabel.text = "comment"
+        //cell.userImageView.image = UIImage(named: "selectimage")
+        
         return cell
     }
     
-    
-    
-    
-    
-    
+
     
 
 }
